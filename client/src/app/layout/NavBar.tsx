@@ -1,6 +1,8 @@
-import { AppBar, Badge, Box, IconButton, List, ListItem, Toolbar, Typography } from "@mui/material";
+import { AppBar, Badge, Box, FormControlLabel, IconButton, LinearProgress, List, ListItem, Switch, Toolbar, Tooltip, Typography } from "@mui/material";
 import { DarkMode, LightMode, ShoppingCart } from '@mui/icons-material';
 import { NavLink } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../store/store";
+import { setDarkMode } from "./uiSlice";
 
 const midLinks = [
     { title: 'Catalog', path: '/catalog' },
@@ -25,20 +27,30 @@ const navStyles = {
     }
 }
 
-type Props = {
-    toggleDarkMode: () => void;
-    darkMode: boolean;
-}
 
-export default function NavBar({ darkMode, toggleDarkMode }: Props) {
+export default function NavBar() {
+    const { isLoading, darkMode } = useAppSelector(state => state.ui);
+    const dispatch = useAppDispatch();
     return (
         <AppBar position="fixed" sx={{ backgroundColor: '#9b0594' }}>
             <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Typography component={NavLink} to='/' sx={navStyles} variant="h6">B2B</Typography>
-                    <IconButton onClick={toggleDarkMode}>
+                    <Typography component={NavLink} to='/'
+                        sx={[navStyles, (theme) => theme.typography.h4,
+                            {
+                                '&.active': { color: 'inherit' }, // blocks the active color change
+                                '&:hover': { color: 'inherit' },  // blocks the hover color change too if needed
+                                fontWeight: 'bolder'
+                            }
+                        ]} variant="h6">
+                        B2B
+                    </Typography>
+
+                    {/* <IconButton onClick={()=>dispatch(setDarkMode())}>
                         {darkMode ? <DarkMode /> : <LightMode sx={{ color: 'white' }} />}
-                    </IconButton>
+                    </IconButton> */}
+
+
                 </Box>
 
                 <List sx={{ display: 'flex' }}>
@@ -68,9 +80,23 @@ export default function NavBar({ darkMode, toggleDarkMode }: Props) {
                                 {title}
                             </ListItem>
                         ))}
+                        <ListItem>
+                            <FormControlLabel
+                                control={
+                                    <><LightMode sx={{ fontSize: 15 }} />
+                                        <Switch checked={darkMode} color="secondary" onChange={() => dispatch(setDarkMode())} />
+                                        <DarkMode sx={{ fontSize: 15 }} /></>
+                                }
+                                label="" />
+                        </ListItem>
                     </List>
                 </Box>
             </Toolbar>
+            {isLoading && (
+                <Box sx={{ width: '100%' }}>
+                    <LinearProgress color="secondary" />
+                </Box>
+            )}
         </AppBar>
     )
 }
