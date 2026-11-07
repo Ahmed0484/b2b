@@ -2,14 +2,16 @@ import { configureStore } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
 import { uiSlice } from "../layout/uiSlice";
 import { catalogApi } from "../../features/catalog/catalogApi";
+import { basketApi } from "../../features/basket/basketApi";
 
 export const store = configureStore({
-    reducer:{
-        ui : uiSlice.reducer ,
-         [catalogApi.reducerPath]: catalogApi.reducer,
+    reducer: {
+        ui: uiSlice.reducer,
+        [catalogApi.reducerPath]: catalogApi.reducer,
+        [basketApi.reducerPath]: basketApi.reducer,
     },
-    middleware: (getDefaultMiddleware) => 
-        getDefaultMiddleware().concat(catalogApi.middleware)
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware().concat(catalogApi.middleware,basketApi.middleware)
 });
 
 export type RootState = ReturnType<typeof store.getState>

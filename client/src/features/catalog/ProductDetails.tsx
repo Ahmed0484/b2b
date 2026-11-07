@@ -1,15 +1,39 @@
-
-import { useParams } from "react-router-dom"
+import { useParams } from "react-router-dom";
 import { Button, Divider, Grid, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography } from "@mui/material";
 import { useFetchProductDetailsQuery } from "./catalogApi";
+import { useEffect, useState, type ChangeEvent } from "react";
+import { useRemoveBasketItemMutation, useAddBasketItemMutation, useFetchBasketQuery } from "../basket/basketApi";
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const [removeBasketItem] = useRemoveBasketItemMutation();
+  const [addBasketItem] = useAddBasketItemMutation();
+  const {data: basket} = useFetchBasketQuery();
+  const item = basket?.items.find(x => x.productId === +id!);
+  const [quantity, setQuantity] = useState(0); 
+  
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (item) setQuantity(item.quantity);
+  }, [item]);
+
   const {data:product,isLoading} = useFetchProductDetailsQuery(id? +id:0);
 
+  if (!product|| isLoading) return <div>Loading...</div>
+  const handleUpdateBasket = () => {
+    const updatedQuantity = item ? Math.abs(quantity - item.quantity) : quantity;
+    if (!item || quantity > item.quantity) {
+      addBasketItem({product, quantity: updatedQuantity})
+    } else {
+      removeBasketItem({productId: product.id, quantity: updatedQuantity})
+    }
+  }
 
-  if (!product || isLoading) return <div>Loading...</div>
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = +event.currentTarget.value;
 
+    if (value >= 0) setQuantity(value)
+  }
   const productDetails = [
     { label: 'Name', value: product.name },
     { label: 'Description', value: product.description },
@@ -28,7 +52,9 @@ export default function ProductDetails() {
         <Divider sx={{ mb: 2 }} />
         <Typography variant="h4" color='secondary'>${(product.price / 100).toFixed(2)}</Typography>
         <TableContainer>
-          <Table sx={{ '& td': {fontSize: '1rem'} }}>
+          <Table sx={{
+            '& td': {fontSize: '1rem'}
+          }}>
             <TableBody>
               {productDetails.map((detail, index) => (
                 <TableRow key={index}>
@@ -47,18 +73,21 @@ export default function ProductDetails() {
               type="number"
               label='Quantity in basket'
               fullWidth
-              defaultValue={1}
+              value={quantity}
+              onChange={handleInputChange}
             />
           </Grid>
           <Grid size={6}>
             <Button
+              onClick={handleUpdateBasket}
+              disabled={quantity === item?.quantity || !item && quantity === 0}
               sx={{height: '55px'}}
-              color="secondary"
+              color="primary"
               size="large"
               variant="contained"
               fullWidth
             >
-              Add to Basket
+              {item ? 'Update quantity' : 'Add to basket'}
             </Button>
           </Grid>
         </Grid>
