@@ -3,10 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { uiSlice } from "../layout/uiSlice";
 import { catalogApi } from "../../features/catalog/catalogApi";
 import { basketApi } from "../../features/basket/basketApi";
+import { catalogSlice } from "../../features/catalog/catalogSlice";
 
 export const store = configureStore({
     reducer: {
         ui: uiSlice.reducer,
+        catalog:catalogSlice.reducer,
         [catalogApi.reducerPath]: catalogApi.reducer,
         [basketApi.reducerPath]: basketApi.reducer,
     },
