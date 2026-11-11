@@ -8,10 +8,11 @@ import ContactPage from "../../features/contact/ContactPage";
 import NotFound from "../errors/NotFound";
 import ServerError from "../errors/ServerError";
 import BasketPage from "../../features/basket/BasketPage";
-import CheckoutPage from "../../features/checkout/CheckoutPage";
 import LoginForm from "../../features/account/LoginForm";
 import RegisterForm from "../../features/account/RegisterForm";
 import RequireAuth from "./RequireAuth";
+import SummaryPage from "../../features/summary/SummaryPage";
+
 
 export const router = createBrowserRouter([
     {
@@ -20,7 +21,7 @@ export const router = createBrowserRouter([
         children: [
              {
                 element: <RequireAuth />, children: [
-                    { path: 'checkout', element: <CheckoutPage /> },
+                    { path: 'summary', element: <SummaryPage /> },
                 ]
             },
             { path: '', element: <HomePage /> },
@@ -29,7 +30,6 @@ export const router = createBrowserRouter([
             { path: 'about', element: <AboutPage /> },
             { path: 'contact', element: <ContactPage /> },
             { path: 'basket', element: <BasketPage /> },
-            { path: 'checkout', element: <CheckoutPage /> },
             { path: 'server-error', element: <ServerError /> },
             { path: 'login', element: <LoginForm /> },
             { path: 'register', element: <RegisterForm /> },
