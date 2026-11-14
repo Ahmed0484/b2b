@@ -4,12 +4,16 @@ using API.RequestHelper;
 using Microsoft.AspNetCore.Mvc;
 using API.Extensions;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using API.DTOs;
+using API.Services;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController(StoreContext context) : ControllerBase
+    public class ProductsController(StoreContext context, IMapper mapper, ImageService imageService) : ControllerBase
     {
         [HttpGet]
         public async Task<ActionResult<List<Product>>>
@@ -43,6 +47,83 @@ namespace API.Controllers
             var types = await context.Products.Select(x => x.Type).Distinct().ToListAsync();
 
             return Ok(new { brands, types });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<ActionResult<Product>> CreateProduct(CreateProductDto productDto)
+        {
+            var product = mapper.Map<Product>(productDto);
+            if (productDto.File != null)
+            {
+                var imageResult = await imageService.AddImageAsync(productDto.File);
+
+                if (imageResult.Error != null)
+                {
+                    return BadRequest(imageResult.Error);
+                }
+
+                product.PictureUrl = imageResult.Url!; 
+                product.PublicId = imageResult.PublicId; 
+            }
+
+            context.Products.Add(product);
+
+            var result = await context.SaveChangesAsync() > 0;
+
+            if (result)
+                return CreatedAtAction(nameof(GetProduct), new { Id = product.Id }, product);
+
+            return BadRequest("Problem creating new procuct");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut]
+        public async Task<ActionResult> UpdateProduct(UpdateProductDto updateProductDto)
+        {
+            var product = await context.Products.FindAsync(updateProductDto.Id);
+
+            if (product == null) return NotFound();
+
+            mapper.Map(updateProductDto, product);
+            if (updateProductDto.File != null)
+            {
+                var imageResult = await imageService.AddImageAsync(updateProductDto.File);
+
+                if (imageResult.Error != null)
+                    BadRequest(imageResult.Error);
+
+                if (!string.IsNullOrEmpty(product.PublicId))
+                    await imageService.DeleteImageAsync(product.PublicId);
+
+                 product.PictureUrl = imageResult.Url!;
+                product.PublicId = imageResult.PublicId;
+            }
+
+            var result = await context.SaveChangesAsync() > 0;
+
+            if (result) return NoContent();
+
+            return BadRequest("Problem updating product");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> DeleteProduct(int id)
+        {
+            var product = await context.Products.FindAsync(id);
+
+            if (product == null) return NotFound();
+            if (!string.IsNullOrEmpty(product.PublicId))
+                await imageService.DeleteImageAsync(product.PublicId);
+
+            context.Products.Remove(product);
+
+            var result = await context.SaveChangesAsync() > 0;
+
+            if (result) return Ok();
+
+            return BadRequest("Problem deleting the product");
         }
     }
 }

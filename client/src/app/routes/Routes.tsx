@@ -12,6 +12,7 @@ import LoginForm from "../../features/account/LoginForm";
 import RegisterForm from "../../features/account/RegisterForm";
 import RequireAuth from "./RequireAuth";
 import SummaryPage from "../../features/summary/SummaryPage";
+import InventoryPage from "../../features/admin/InventoryPage";
 
 
 export const router = createBrowserRouter([
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
              {
                 element: <RequireAuth />, children: [
                     { path: 'summary', element: <SummaryPage /> },
+                    { path: 'inventory', element: <InventoryPage /> },
                 ]
             },
             { path: '', element: <HomePage /> },

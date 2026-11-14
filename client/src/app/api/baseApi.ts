@@ -5,14 +5,14 @@ import { router } from "../routes/Routes";
 
 const customBaseQuery = fetchBaseQuery({
     baseUrl: 'https://localhost:5001/api',
-    credentials:'include'
+    credentials: 'include'
 });
 
-type ErrorResponse = | string | {title: string} | {errors: string[]};
+type ErrorResponse = | string | { title: string } | { errors: string[] };
 
 const sleep = () => new Promise(resolve => setTimeout(resolve, 200));
 
-export const baseQueryWithErrorHandling = async (args: string | FetchArgs, api: BaseQueryApi, 
+export const baseQueryWithErrorHandling = async (args: string | FetchArgs, api: BaseQueryApi,
     extraOptions: object) => {
     api.dispatch(startLoading());
     await sleep();
@@ -39,13 +39,17 @@ export const baseQueryWithErrorHandling = async (args: string | FetchArgs, api: 
                 if (typeof responseData === 'object' && 'title' in responseData)
                     toast.error(responseData.title);
                 break;
+            case 403:
+                if (typeof responseData === 'object')
+                    toast.error('Forbidden');
+                break;
             case 404:
                 if (typeof responseData === 'object' && 'title' in responseData)
                     router.navigate('/not-found')
                 break;
             case 500:
                 if (typeof responseData === 'object')
-                    router.navigate('/server-error', {state: {error: responseData}})
+                    router.navigate('/server-error', { state: { error: responseData } })
                 break;
             default:
                 break;

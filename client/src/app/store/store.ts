@@ -5,6 +5,7 @@ import { catalogApi } from "../../features/catalog/catalogApi";
 import { basketApi } from "../../features/basket/basketApi";
 import { catalogSlice } from "../../features/catalog/catalogSlice";
 import { accountApi } from "../../features/account/accountApi";
+import { adminApi } from "../../features/admin/adminapi";
 
 export const store = configureStore({
     reducer: {
@@ -13,10 +14,11 @@ export const store = configureStore({
         [catalogApi.reducerPath]: catalogApi.reducer,
         [basketApi.reducerPath]: basketApi.reducer,
         [accountApi.reducerPath]: accountApi.reducer,
+        [adminApi.reducerPath]: adminApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware()
-    .concat(catalogApi.middleware,basketApi.middleware,accountApi.middleware)
+    .concat(catalogApi.middleware,basketApi.middleware,accountApi.middleware,adminApi.middleware)
 });
 
 export type RootState = ReturnType<typeof store.getState>
